@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loja PRO Estável</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0f0f0f;
+color:#fff;
+}
+
+header{
+background:#000;
+padding:15px;
+text-align:center;
+font-size:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:10px;
+padding:10px;
+}
+
+.card{
+background:#1c1c1c;
+border-radius:10px;
+padding:10px;
+text-align:center;
+}
+
+.card img{
+width:100%;
+height:120px;
+object-fit:cover;
+border-radius:8px;
+}
+
+button{
+margin-top:5px;
+padding:8px;
+border:none;
+border-radius:6px;
+background:#00ff88;
+cursor:pointer;
+}
+
+.bottom{
+position:fixed;
+bottom:0;
+width:100%;
+background:#111;
+padding:10px;
+text-align:center;
+}
+
+.topBtns{
+display:flex;
+justify-content:space-around;
+padding:10px;
+}
+
+.panel{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#000c;
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+.box{
+background:#222;
+padding:15px;
+border-radius:10px;
+width:90%;
+max-width:300px;
+}
+
+.box input,.box textarea{
+width:100%;
+margin:5px 0;
+padding:8px;
+border:none;
+border-radius:6px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>📺 Loja PRO Estável</header>
+
+<div class="topBtns">
+<button onclick="openAdmin()">🔐 Admin</button>
+<button onclick="openAdd()">➕ Add</button>
+<button onclick="openCart()">🛒 Carrinho</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="bottom">
+Total: R$ <span id="total">0</span>
+</div>
+
+<!-- ADMIN -->
+<div class="panel" id="admin">
+<div class="box">
+<input id="senha" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+</div>
+</div>
+
+<!-- ADD -->
+<div class="panel" id="add">
+<div class="box">
+<input id="nome" placeholder="Nome">
+<input id="preco" placeholder="Preço">
+<textarea id="desc" placeholder="Descrição"></textarea>
+<input id="img" placeholder="Link imagem">
+<button onclick="add()">Salvar</button>
+</div>
+</div>
+
+<!-- CART -->
+<div class="panel" id="cart">
+<div class="box">
+<div id="lista"></div>
+<button onclick="finish()">Finalizar Compra</button>
+</div>
+</div>
+
+<script>
+
+let admin = false;
+let total = 0;
+let cart = [];
+let produtos = [];
+
+function init(){
+
+let saved = localStorage.getItem('produtos');
+
+if(saved){
+produtos = JSON.parse(saved);
+}else{
+produtos = [
+{nome:'Netflix Premium',preco:10,desc:'Mensal completo',img:'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'},
+{nome:'IPTV Mod',preco:20,desc:'Canais + filmes',img:'https://cdn-icons-png.flaticon.com/512/1048/1048953.png'},
+{nome:'Disney+ YouCine',preco:7,desc:'15 dias',img:'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg'}
+];
+save();
+}
+
+render();
+}
+
+function save(){
+localStorage.setItem('produtos',JSON.stringify(produtos));
+}
+
+function render(){
+let g = document.getElementById('grid');
+g.innerHTML = '';
+
+produtos.forEach((p,i)=>{
+g.innerHTML += `
+<div class="card">
+<img src="${p.img}">
+<h4>${p.nome}</h4>
+<p>${p.desc}</p>
+<b>R$ ${p.preco}</b>
+<button onclick="buy(${i})">Comprar</button>
+${admin ? `<button onclick="del(${i})">Excluir</button>` : ''}
+</div>`;
+});
+}
+
+function buy(i){
+cart.push(produtos[i]);
+total += Number(produtos[i].preco);
+document.getElementById('total').innerText = total;
+alert("Adicionado ao carrinho!");
+}
+
+function del(i){
+produtos.splice(i,1);
+save();
+render();
+}
+
+function openAdmin(){ show('admin'); }
+function openAdd(){ if(!admin) return alert("Acesso negado"); show('add'); }
+
+function openCart(){
+let l = document.getElementById('lista');
+
+if(cart.length === 0){
+l.innerHTML = "Carrinho vazio";
+}else{
+l.innerHTML = "";
+cart.forEach(p=>{
+l.innerHTML += `• ${p.nome} R$ ${p.preco}<br>`;
+});
+}
+
+show('cart');
+}
+
+function show(id){
+document.getElementById(id).style.display = 'flex';
+}
+
+function closeAll(){
+document.querySelectorAll('.panel').forEach(p=>{
+p.style.display = 'none';
+});
+}
+
+function login(){
+if(document.getElementById('senha').value === 'coringa09'){
+admin = true;
+alert('Login aprovado');
+closeAll();
+render();
+}else{
+alert('Senha errada');
+}
+}
+
+function add(){
+let nome = document.getElementById('nome').value;
+let preco = parseFloat(document.getElementById('preco').value);
+let desc = document.getElementById('desc').value;
+let img = document.getElementById('img').value;
+
+if(!nome || isNaN(preco)){
+alert("Preencha corretamente");
+return;
+}
+
+produtos.push({
+nome,preco,desc,
+img: img || 'https://via.placeholder.com/300'
+});
+
+save();
+render();
+closeAll();
+}
+
+function finish(){
+
+if(cart.length === 0){
+alert("Carrinho vazio!");
+return;
+}
+
+let num = "557597016308";
+
+let msg = "🛒 Pedido:\n\n";
+
+cart.forEach(p=>{
+msg += `- ${p.nome} R$ ${p.preco}\n`;
+});
+
+msg += `\n💰 Total: R$ ${total}`;
+
+let url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+
+window.open(url, "_blank");
+}
+
+window.onclick = e=>{
+if(e.target.classList.contains('panel')) closeAll();
+}
+
+init();
+
+</script>
+
+</body>
+</html>
