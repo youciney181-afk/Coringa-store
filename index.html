@@ -92,7 +92,6 @@ padding:8px;
 border:none;
 border-radius:6px;
 }
-
 </style>
 </head>
 
@@ -135,7 +134,6 @@ Total: R$ <span id="total">0</span>
 <div class="panel" id="cart">
 <div class="box">
 <div id="lista"></div>
-<button onclick="finish()">Finalizar Compra</button>
 </div>
 </div>
 
@@ -202,18 +200,36 @@ function openAdmin(){ show('admin'); }
 function openAdd(){ if(!admin) return alert("Acesso negado"); show('add'); }
 
 function openCart(){
-let l = document.getElementById('lista');
+
+let msg = "🛒 PEDIDO:\n\n";
 
 if(cart.length === 0){
-l.innerHTML = "Carrinho vazio";
+msg += "Carrinho vazio";
 }else{
-l.innerHTML = "";
 cart.forEach(p=>{
-l.innerHTML += `• ${p.nome} R$ ${p.preco}<br>`;
+msg += `- ${p.nome} R$ ${p.preco}\n`;
 });
+msg += `\n💰 Total: R$ ${total}`;
 }
 
+document.getElementById('lista').innerHTML = `
+<textarea id="pedidoText" style="width:100%;height:120px;">${msg}</textarea>
+
+<button onclick="copyOrder()">📋 Copiar Pedido</button>
+<button onclick="openTelegram()">📲 Abrir Telegram</button>
+`;
+
 show('cart');
+}
+
+function copyOrder(){
+let text = document.getElementById("pedidoText").value;
+navigator.clipboard.writeText(text);
+alert("Pedido copiado!");
+}
+
+function openTelegram(){
+window.open("https://t.me/coringa759", "_blank");
 }
 
 function show(id){
@@ -256,28 +272,6 @@ img: img || 'https://via.placeholder.com/300'
 save();
 render();
 closeAll();
-}
-
-function finish(){
-
-if(cart.length === 0){
-alert("Carrinho vazio!");
-return;
-}
-
-let num = "557597016308";
-
-let msg = "🛒 Pedido:\n\n";
-
-cart.forEach(p=>{
-msg += `- ${p.nome} R$ ${p.preco}\n`;
-});
-
-msg += `\n💰 Total: R$ ${total}`;
-
-let url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
-
-window.open(url, "_blank");
 }
 
 window.onclick = e=>{
